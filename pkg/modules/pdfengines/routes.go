@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -579,6 +580,15 @@ func convertToImageRoute(engine gotenberg.ImageConverter) api.Route {
 				}
 
 				outputPaths = append(outputPaths, convertedPaths...)
+			}
+
+			if len(outputPaths) == 1 {
+				dummyPath := ctx.GeneratePath(".txt")
+				err = os.WriteFile(dummyPath, []byte("This archive contains PNG files converted from PDF"), 0644)
+				if err != nil {
+					return fmt.Errorf("create dummy file: %w", err)
+				}
+				outputPaths = append(outputPaths, dummyPath)
 			}
 
 			err = ctx.AddOutputPaths(outputPaths...)
