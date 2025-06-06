@@ -160,7 +160,9 @@ func outputFilenameMiddleware() echo.MiddlewareFunc {
 		return func(c echo.Context) error {
 			filename := c.Request().Header.Get("Gotenberg-Output-Filename")
 			// See https://github.com/gotenberg/gotenberg/issues/1227.
-			filename = filepath.Base(filename)
+			if filename != "" {
+				filename = filepath.Base(filename)
+			}
 			c.Set("outputFilename", filename)
 			// Call the next middleware in the chain.
 			return next(c)
