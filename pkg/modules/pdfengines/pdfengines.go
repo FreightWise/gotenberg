@@ -34,6 +34,7 @@ type PdfEngines struct {
 	readMetadataNames  []string
 	writeMetadataNames []string
 	engines            []gotenberg.PdfEngine
+	imageConverter     gotenberg.ImageConverter
 	disableRoutes      bool
 }
 
@@ -128,6 +129,12 @@ func (mod *PdfEngines) Provision(ctx *gotenberg.Context) error {
 	mod.writeMetadataNames = defaultNames
 	if len(writeMetadataNames) > 0 {
 		mod.writeMetadataNames = writeMetadataNames
+	}
+
+	imageConverterMods, err := ctx.Modules(new(gotenberg.ImageConverterProvider))
+	if err == nil && len(imageConverterMods) > 0 {
+		provider := imageConverterMods[0].(gotenberg.ImageConverterProvider)
+		mod.imageConverter = provider.ImageConverter()
 	}
 
 	return nil
@@ -243,14 +250,20 @@ func (mod *PdfEngines) Routes() ([]api.Route, error) {
 		return nil, fmt.Errorf("get pdf mod: %w", err)
 	}
 
-	return []api.Route{
+	routes := []api.Route{
 		mergeRoute(engine),
 		splitRoute(engine),
 		flattenRoute(engine),
 		convertRoute(engine),
 		readMetadataRoute(engine),
 		writeMetadataRoute(engine),
-	}, nil
+	}
+
+	if mod.imageConverter != nil {
+		routes = append(routes, convertToImageRoute(mod.imageConverter))
+	}
+
+	return routes, nil
 }
 
 // Interface guards.

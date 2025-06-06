@@ -115,6 +115,14 @@ type PdfEngine interface {
 	WriteMetadata(ctx context.Context, logger *zap.Logger, metadata map[string]interface{}, inputPath string) error
 }
 
+type ImageConverter interface {
+	ConvertToImage(ctx context.Context, logger *zap.Logger, inputPath, outputDirPath string, format string) ([]string, error)
+}
+
+type ImageConverterProvider interface {
+	ImageConverter() ImageConverter
+}
+
 // PdfEngineProvider offers an interface to instantiate a [PdfEngine].
 // This is used to decouple the creation of a [PdfEngine] from its consumers.
 //
