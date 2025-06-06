@@ -548,6 +548,7 @@ func writeMetadataRoute(engine gotenberg.PdfEngine) api.Route {
 		},
 	}
 }
+
 func convertToImageRoute(engine gotenberg.ImageConverter) api.Route {
 	return api.Route{
 		Method:      http.MethodPost,
@@ -577,7 +578,9 @@ func convertToImageRoute(engine gotenberg.ImageConverter) api.Route {
 					return fmt.Errorf("convert PDF to PNG: %w", err)
 				}
 
-				outputPaths = append(outputPaths, convertedPaths...)
+				if len(convertedPaths) > 0 {
+					outputPaths = append(outputPaths, convertedPaths[0])
+				}
 			}
 
 			err = ctx.AddOutputPaths(outputPaths...)
