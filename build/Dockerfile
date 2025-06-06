@@ -286,6 +286,8 @@ ENV QPDF_BIN_PATH=/usr/bin/qpdf
 ENV EXIFTOOL_BIN_PATH=/usr/bin/exiftool
 ENV PDFCPU_BIN_PATH=/usr/bin/pdfcpu
 ENV PDFTOPPM_BIN_PATH=/usr/bin/pdftoppm
+ENV PDFTOPPM_DPI=203
+ENV PDFTOPPM_ANTIALIASING=no
 
 USER gotenberg
 WORKDIR /home/gotenberg
