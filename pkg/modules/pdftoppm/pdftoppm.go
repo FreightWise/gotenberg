@@ -74,9 +74,21 @@ func (engine *PdfToPpm) ConvertToImage(ctx context.Context, logger *zap.Logger, 
 	
 	args := []string{
 		"-png",
-		inputPath,
-		outputPrefix,
 	}
+	
+	if dpi := os.Getenv("PDFTOPPM_DPI"); dpi != "" {
+		args = append(args, "-r", dpi)
+	} else {
+		args = append(args, "-r", "203") // Default to 203 DPI as requested
+	}
+	
+	if aa := os.Getenv("PDFTOPPM_ANTIALIASING"); aa != "" {
+		args = append(args, "-aa", aa)
+	} else {
+		args = append(args, "-aa", "no") // Default to no antialiasing
+	}
+	
+	args = append(args, inputPath, outputPrefix)
 
 	cmd, err := gotenberg.CommandContext(ctx, logger, engine.binPath, args...)
 	if err != nil {
