@@ -578,9 +578,7 @@ func convertToImageRoute(engine gotenberg.ImageConverter) api.Route {
 					return fmt.Errorf("convert PDF to PNG: %w", err)
 				}
 
-				if len(convertedPaths) > 0 {
-					outputPaths = append(outputPaths, convertedPaths[0])
-				}
+				outputPaths = append(outputPaths, convertedPaths...)
 			}
 
 			err = ctx.AddOutputPaths(outputPaths...)
