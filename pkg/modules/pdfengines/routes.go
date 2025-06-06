@@ -548,3 +548,44 @@ func writeMetadataRoute(engine gotenberg.PdfEngine) api.Route {
 		},
 	}
 }
+func convertToImageRoute(engine gotenberg.ImageConverter) api.Route {
+	return api.Route{
+		Method:      http.MethodPost,
+		Path:        "/forms/pdfengines/convert-to-png",
+		IsMultipart: true,
+		Handler: func(c echo.Context) error {
+			ctx := c.Get("context").(*api.Context)
+
+			var inputPaths []string
+			err := ctx.FormData().
+				MandatoryPaths([]string{".pdf"}, &inputPaths).
+				Validate()
+
+			if err != nil {
+				return fmt.Errorf("validate form data: %w", err)
+			}
+
+			var outputPaths []string
+			for _, inputPath := range inputPaths {
+				outputDirPath, err := ctx.CreateSubDirectory(fmt.Sprintf("convert_%s", filepath.Base(inputPath)))
+				if err != nil {
+					return fmt.Errorf("create sub-directory: %w", err)
+				}
+
+				convertedPaths, err := engine.ConvertToImage(ctx, ctx.Log(), inputPath, outputDirPath, "png")
+				if err != nil {
+					return fmt.Errorf("convert PDF to PNG: %w", err)
+				}
+
+				outputPaths = append(outputPaths, convertedPaths...)
+			}
+
+			err = ctx.AddOutputPaths(outputPaths...)
+			if err != nil {
+				return fmt.Errorf("add output paths: %w", err)
+			}
+
+			return nil
+		},
+	}
+}

@@ -248,7 +248,7 @@ RUN \
     chmod +x /usr/bin/pdftk &&\
     apt-get update -qq &&\
     apt-get upgrade -yqq &&\
-    DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends qpdf=11.3.0-1+deb12u1 exiftool &&\
+    DEBIAN_FRONTEND=noninteractive apt-get install -y -qq --no-install-recommends qpdf=11.3.0-1+deb12u1 exiftool poppler-utils &&\
     # See https://github.com/nextcloud/docker/issues/380.
     mkdir -p /usr/share/man/man1 &&\
     # Verify installations.
@@ -285,6 +285,7 @@ ENV PDFTK_BIN_PATH=/usr/bin/pdftk
 ENV QPDF_BIN_PATH=/usr/bin/qpdf
 ENV EXIFTOOL_BIN_PATH=/usr/bin/exiftool
 ENV PDFCPU_BIN_PATH=/usr/bin/pdfcpu
+ENV PDFTOPPM_BIN_PATH=/usr/bin/pdftoppm
 
 USER gotenberg
 WORKDIR /home/gotenberg
