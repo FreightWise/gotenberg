@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"syscall"
 
 	"go.uber.org/zap"
@@ -66,6 +67,22 @@ func (engine *PdfToPpm) Debug() map[string]interface{} {
 }
 
 func (engine *PdfToPpm) ConvertToImage(ctx context.Context, logger *zap.Logger, inputPath, outputDirPath string, format string) ([]string, error) {
+	dpi := 203
+	if envDpi := os.Getenv("PDFTOPPM_DPI"); envDpi != "" {
+		if parsedDpi, err := strconv.Atoi(envDpi); err == nil {
+			dpi = parsedDpi
+		}
+	}
+	
+	antialiasing := "no"
+	if envAA := os.Getenv("PDFTOPPM_ANTIALIASING"); envAA != "" {
+		antialiasing = envAA
+	}
+	
+	return engine.ConvertToImageWithOptions(ctx, logger, inputPath, outputDirPath, format, dpi, antialiasing)
+}
+
+func (engine *PdfToPpm) ConvertToImageWithOptions(ctx context.Context, logger *zap.Logger, inputPath, outputDirPath string, format string, dpi int, antialiasing string) ([]string, error) {
 	if format != "png" {
 		return nil, fmt.Errorf("convert PDF to '%s' with pdftoppm: %w", format, gotenberg.ErrPdfEngineMethodNotSupported)
 	}
@@ -74,18 +91,8 @@ func (engine *PdfToPpm) ConvertToImage(ctx context.Context, logger *zap.Logger, 
 	
 	args := []string{
 		"-png",
-	}
-	
-	if dpi := os.Getenv("PDFTOPPM_DPI"); dpi != "" {
-		args = append(args, "-r", dpi)
-	} else {
-		args = append(args, "-r", "203") // Default to 203 DPI as requested
-	}
-	
-	if aa := os.Getenv("PDFTOPPM_ANTIALIASING"); aa != "" {
-		args = append(args, "-aa", aa)
-	} else {
-		args = append(args, "-aa", "no") // Default to no antialiasing
+		"-r", strconv.Itoa(dpi),
+		"-aa", antialiasing,
 	}
 	
 	args = append(args, inputPath, outputPrefix)

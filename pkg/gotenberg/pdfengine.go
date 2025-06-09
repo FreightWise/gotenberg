@@ -117,6 +117,7 @@ type PdfEngine interface {
 
 type ImageConverter interface {
 	ConvertToImage(ctx context.Context, logger *zap.Logger, inputPath, outputDirPath string, format string) ([]string, error)
+	ConvertToImageWithOptions(ctx context.Context, logger *zap.Logger, inputPath, outputDirPath string, format string, dpi int, antialiasing string) ([]string, error)
 }
 
 type ImageConverterProvider interface {

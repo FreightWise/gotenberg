@@ -558,9 +558,33 @@ func convertToImageRoute(engine gotenberg.ImageConverter) api.Route {
 		Handler: func(c echo.Context) error {
 			ctx := c.Get("context").(*api.Context)
 
-			var inputPaths []string
+			var (
+				inputPaths   []string
+				dpi          int
+				antialiasing string
+			)
+
 			err := ctx.FormData().
 				MandatoryPaths([]string{".pdf"}, &inputPaths).
+				Custom("dpi", func(value string) error {
+					if value == "" {
+						dpi = 203
+						return nil
+					}
+					
+					intValue, err := strconv.Atoi(value)
+					if err != nil {
+						return err
+					}
+					
+					if intValue < 72 || intValue > 600 {
+						return errors.New("DPI must be between 72 and 600")
+					}
+					
+					dpi = intValue
+					return nil
+				}).
+				String("antialiasing", &antialiasing, "no").
 				Validate()
 
 			if err != nil {
@@ -574,7 +598,7 @@ func convertToImageRoute(engine gotenberg.ImageConverter) api.Route {
 					return fmt.Errorf("create sub-directory: %w", err)
 				}
 
-				convertedPaths, err := engine.ConvertToImage(ctx, ctx.Log(), inputPath, outputDirPath, "png")
+				convertedPaths, err := engine.ConvertToImageWithOptions(ctx, ctx.Log(), inputPath, outputDirPath, "png", dpi, antialiasing)
 				if err != nil {
 					return fmt.Errorf("convert PDF to PNG: %w", err)
 				}

@@ -58,3 +58,28 @@ Feature: /forms/pdfengines/convert-to-png
     Then the response header "Gotenberg-Trace" should be "forms_pdfengines_convert_to_png"
     Then the Gotenberg container should log the following entries:
       | "trace":"forms_pdfengines_convert_to_png" |
+
+  Scenario: POST /forms/pdfengines/convert-to-png (Custom DPI and Antialiasing)
+    Given I have a default Gotenberg container
+    When I make a "POST" request to Gotenberg at the "/forms/pdfengines/convert-to-png" endpoint with the following form data and header(s):
+      | files        | testdata/Blank+pdf+1.pdf | file  |
+      | dpi          | 150                      | field |
+      | antialiasing | yes                      | field |
+    Then the response status code should be 200
+    Then the response header "Content-Type" should be "application/zip"
+    Then there should be the following file(s) in the response:
+      | page-1.png |
+      | page-2.png |
+      | page-3.png |
+
+  Scenario: POST /forms/pdfengines/convert-to-png (Invalid DPI)
+    Given I have a default Gotenberg container
+    When I make a "POST" request to Gotenberg at the "/forms/pdfengines/convert-to-png" endpoint with the following form data and header(s):
+      | files | testdata/Blank+pdf+1.pdf | file  |
+      | dpi   | 1000                     | field |
+    Then the response status code should be 400
+    Then the response header "Content-Type" should be "text/plain; charset=UTF-8"
+    Then the response body should match string:
+      """
+      Invalid form data: form field 'dpi' is invalid (got '1000', resulting to DPI must be between 72 and 600)
+      """
