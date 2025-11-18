@@ -30,6 +30,8 @@ func convertRoute(libreOffice libreofficeapi.Uno, engine gotenberg.PdfEngine) ap
 			splitMode := pdfengines.FormDataPdfSplitMode(form, false)
 			pdfFormats := pdfengines.FormDataPdfFormats(form)
 			metadata := pdfengines.FormDataPdfMetadata(form, false)
+			userPassword, ownerPassword := pdfengines.FormDataPdfEncrypt(form)
+			embedPaths := pdfengines.FormDataPdfEmbeds(form)
 
 			zeroValuedSplitMode := gotenberg.SplitMode{}
 
@@ -251,6 +253,11 @@ func convertRoute(libreOffice libreofficeapi.Uno, engine gotenberg.PdfEngine) ap
 				}
 			}
 
+			err = pdfengines.EmbedFilesStub(ctx, engine, embedPaths, outputPaths)
+			if err != nil {
+				return fmt.Errorf("embed files into PDFs: %w", err)
+			}
+
 			err = pdfengines.WriteMetadataStub(ctx, engine, metadata, outputPaths)
 			if err != nil {
 				return fmt.Errorf("write metadata: %w", err)
@@ -261,6 +268,11 @@ func convertRoute(libreOffice libreofficeapi.Uno, engine gotenberg.PdfEngine) ap
 				if err != nil {
 					return fmt.Errorf("flatten PDFs: %w", err)
 				}
+			}
+
+			err = pdfengines.EncryptPdfStub(ctx, engine, userPassword, ownerPassword, outputPaths)
+			if err != nil {
+				return fmt.Errorf("encrypt PDFs: %w", err)
 			}
 
 			if len(outputPaths) > 1 && splitMode == zeroValuedSplitMode {

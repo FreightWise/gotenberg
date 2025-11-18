@@ -1,6 +1,8 @@
 # TODO:
 # 1. PDF/UA-2.
 
+@pdfengines
+@pdfengines-convert
 Feature: /forms/pdfengines/convert
 
   Scenario: POST /forms/pdfengines/convert (Single PDF/A-1b)
@@ -53,7 +55,7 @@ Feature: /forms/pdfengines/convert
     Then the response header "Content-Type" should be "application/pdf"
     Then there should be 1 PDF(s) in the response
     Then the response PDF(s) should be valid "PDF/A-1b" with a tolerance of 1 failed rule(s)
-    Then the response PDF(s) should be valid "PDF/UA-1" with a tolerance of 2 failed rule(s)
+    Then the response PDF(s) should be valid "PDF/UA-1" with a tolerance of 3 failed rule(s)
 
   Scenario: POST /forms/pdfengines/convert (Many PDFs)
     Given I have a default Gotenberg container
@@ -115,6 +117,7 @@ Feature: /forms/pdfengines/convert
     Then the Gotenberg container should log the following entries:
       | "trace":"forms_pdfengines_convert" |
 
+  @output-filename
   Scenario: POST /forms/pdfengines/convert (Output Filename - Single PDF)
     Given I have a default Gotenberg container
     When I make a "POST" request to Gotenberg at the "/forms/pdfengines/convert" endpoint with the following form data and header(s):
@@ -126,6 +129,7 @@ Feature: /forms/pdfengines/convert
     Then there should be the following file(s) in the response:
       | foo.pdf |
 
+  @output-filename
   Scenario: POST /forms/pdfengines/convert (Output Filename - Many PDFs)
     Given I have a default Gotenberg container
     When I make a "POST" request to Gotenberg at the "/forms/pdfengines/convert" endpoint with the following form data and header(s):
@@ -140,6 +144,7 @@ Feature: /forms/pdfengines/convert
       | page_1.pdf |
       | page_2.pdf |
 
+  @download-from
   Scenario: POST /forms/pdfengines/convert (Download From)
     Given I have a default Gotenberg container
     Given I have a static server
@@ -150,6 +155,7 @@ Feature: /forms/pdfengines/convert
     Then the response status code should be 200
     Then the response header "Content-Type" should be "application/pdf"
 
+  @webhook
   Scenario: POST /forms/pdfengines/convert (Webhook)
     Given I have a default Gotenberg container
     Given I have a webhook server

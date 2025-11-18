@@ -2,6 +2,7 @@
 # 1. Other HTTP Methods
 # 2. Errors
 
+@webhook
 Feature: Webhook
 
   Scenario: Default
@@ -30,4 +31,16 @@ Feature: Webhook
     Then the webhook request header "X-Foo" should be "bar"
     # https://github.com/gotenberg/gotenberg/issues/1165
     Then the webhook request header "Content-Disposition" should be "inline"
+    Then there should be 1 PDF(s) in the webhook request
+
+  Scenario: Synchronous
+    Given I have a Gotenberg container with the following environment variable(s):
+      | WEBHOOK_ENABLE_SYNC_MODE | true |
+    Given I have a webhook server
+    When I make a "POST" request to Gotenberg at the "/forms/pdfengines/flatten" endpoint with the following form data and header(s):
+      | files                       | testdata/page_1.pdf                          | file   |
+      | Gotenberg-Webhook-Url       | http://host.docker.internal:%d/webhook       | header |
+      | Gotenberg-Webhook-Error-Url | http://host.docker.internal:%d/webhook/error | header |
+    Then the response status code should be 204
+    Then the webhook request header "Content-Type" should be "application/pdf"
     Then there should be 1 PDF(s) in the webhook request
